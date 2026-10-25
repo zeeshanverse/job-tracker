@@ -1,0 +1,2 @@
+import React,{useState} from 'react'; import {createRoot} from 'react-dom/client'; import './styles.css'; import Login from './pages/Login'; import Dashboard from './pages/Dashboard';
+function App(){const [user,setUser]=useState<any>(()=>{try{return JSON.parse(localStorage.getItem('jobtrack_user')||'null')}catch{return null}});if(!user)return <Login onAuth={setUser}/>;return <Dashboard user={user} onLogout={()=>{localStorage.clear();setUser(null)}}/>}createRoot(document.getElementById('root')!).render(<React.StrictMode><App/></React.StrictMode>);
