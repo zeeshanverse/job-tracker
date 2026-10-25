@@ -4,8 +4,9 @@ COPY pom.xml .
 RUN mvn -q -DskipTests dependency:go-offline
 COPY src ./src
 RUN mvn -q -DskipTests package
+
 FROM eclipse-temurin:21-jre
 WORKDIR /app
 COPY --from=build /app/target/jobtrack-api-1.0.0.jar app.jar
-EXPOSE 8080
-ENTRYPOINT ["java","-jar","app.jar"]
+# Tuned for a small (512 MB) container
+ENTRYPOINT ["java","-XX:MaxRAMPercentage=70","-XX:+UseSerialGC","-XX:TieredStopAtLevel=1","-jar","app.jar"]

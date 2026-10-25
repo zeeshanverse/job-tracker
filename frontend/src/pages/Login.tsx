@@ -1,2 +1,133 @@
-import {useState} from 'react'; import {api} from '../lib/api';
-export default function Login({onAuth}:{onAuth:(x:any)=>void}){const [register,setRegister]=useState(false),[name,setName]=useState(''),[email,setEmail]=useState(''),[password,setPassword]=useState(''),[err,setErr]=useState('');const go=async(e:any)=>{e.preventDefault();try{const r=register?await api.register({name,email,password}):await api.login({email,password});localStorage.setItem('jobtrack_token',r.token);localStorage.setItem('jobtrack_user',JSON.stringify(r.user));onAuth(r.user)}catch(x:any){setErr(x.message)}};return <main className="auth"><section className="auth-card"><div className="brand">JobTrack</div><h1>{register?'Create your account':'Welcome back'}</h1><p className="muted">Track applications, interviews, follow-ups and offers in one place.</p><form className="form" onSubmit={go}>{register&&<label>Name<input required value={name} onChange={e=>setName(e.target.value)}/></label>}<label>Email<input required type="email" value={email} onChange={e=>setEmail(e.target.value)}/></label><label>Password<input required minLength={8} type="password" value={password} onChange={e=>setPassword(e.target.value)}/></label>{err&&<div className="error">{err}</div>}<button>{register?'Create account':'Sign in'}</button></form><button className="link" onClick={()=>setRegister(!register)}>{register?'Already have an account? Sign in':'New here? Create an account'}</button></section></main>}
+import { FormEvent, useState } from 'react'
+import { api, saveSession, User } from '../lib/api'
+
+const STAGES = ['Saved', 'Applied', 'Screening', 'Interview', 'Offer']
+
+export default function Login({
+  onAuth,
+  notice = '',
+}: {
+  onAuth: (user: User) => void
+  notice?: string
+}) {
+  const [register, setRegister] = useState(false)
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault()
+    if (busy) return
+    setError('')
+    setBusy(true)
+    try {
+      const cleanEmail = email.trim().toLowerCase()
+      const result = register
+        ? await api.register({ name: name.trim(), email: cleanEmail, password })
+        : await api.login({ email: cleanEmail, password })
+      saveSession(result)
+      onAuth(result.user)
+    } catch (err: any) {
+      setError(err?.message || 'Something went wrong. Please try again.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const switchMode = () => {
+    setRegister((r) => !r)
+    setError('')
+  }
+
+  return (
+    <main className="auth">
+      <aside className="auth-brand">
+        <div className="logo">
+          <span className="logo-mark">J</span>
+          JobTrack
+        </div>
+
+        <div className="auth-pitch">
+          <h1>Know where every application stands.</h1>
+          <p>
+            Save roles, log applications, and keep your interviews and follow-ups in one place, so
+            nothing slips while you wait to hear back.
+          </p>
+        </div>
+
+        <div className="steps" aria-hidden="true">
+          {STAGES.map((stage, i) => (
+            <div className="step" key={stage} style={{ ['--h' as any]: `${28 + i * 18}%` }}>
+              {stage}
+            </div>
+          ))}
+        </div>
+      </aside>
+
+      <section className="auth-panel">
+        <form className="auth-form" onSubmit={submit} noValidate={false}>
+          <h2>{register ? 'Create your account' : 'Sign in'}</h2>
+          <p className="muted">
+            {register ? 'It takes a few seconds.' : 'Welcome back. Pick up where you left off.'}
+          </p>
+
+          {notice && !error && <div className="notice">{notice}</div>}
+
+          {register && (
+            <label>
+              Name
+              <input
+                required
+                minLength={2}
+                maxLength={100}
+                autoComplete="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </label>
+          )}
+
+          <label>
+            Email
+            <input
+              required
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </label>
+
+          <label>
+            Password
+            <input
+              required
+              minLength={register ? 8 : undefined}
+              type="password"
+              autoComplete={register ? 'new-password' : 'current-password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            {register && <small className="hint">Use at least 8 characters.</small>}
+          </label>
+
+          {error && (
+            <div className="error" role="alert">
+              {error}
+            </div>
+          )}
+
+          <button type="submit" disabled={busy}>
+            {busy ? (register ? 'Creating account…' : 'Signing in…') : register ? 'Create account' : 'Sign in'}
+          </button>
+
+          <button type="button" className="link switch" onClick={switchMode}>
+            {register ? 'Already have an account? Sign in' : 'New here? Create an account'}
+          </button>
+        </form>
+      </section>
+    </main>
+  )
+}
