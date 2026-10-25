@@ -1,154 +1,434 @@
-# JobTrack — Full-Stack Job Application Tracker
+# JobTrack
 
-JobTrack is a production-oriented evolution of the referenced Java Swing job tracker. The reference application provides login/register, add/view/edit/remove job records and file persistence; JobTrack keeps that core idea but moves persistence to a relational database and adds a web UI, REST API, JWT authentication, dashboard metrics, filtering/search, follow-up/deadline fields, recruiter information, priorities, work modes, Docker support and a clean path to Vercel + Render deployment.
+> A production-oriented full-stack job application tracking platform built with Java, Spring Boot, React, and PostgreSQL.
 
-Reference: https://github.com/SudiptoDEV90/JOB-Tracker-Application-System
+JobTrack is a full-stack application designed to help developers manage their job search from application to offer.
 
-## Architecture
+Instead of maintaining applications across spreadsheets, browser tabs, notes, and emails, JobTrack provides a centralized workspace for tracking applications, monitoring progress, recording interviews, managing follow-ups, and understanding job-search performance.
 
-- `backend/`: Java 21 + Spring Boot 3.5 + Spring Security + JWT + Spring Data JPA + Flyway + PostgreSQL/H2
-- `frontend/`: React + TypeScript + Vite
-- `docker-compose.yml`: PostgreSQL + backend + frontend
-- `docs/`: local testing and deployment notes
+---
 
-## Features
+## Why JobTrack?
 
-### Authentication
-- Register and login
+Job searching creates a surprisingly large amount of information:
+
+- Which companies have I applied to?
+- What position did I apply for?
+- When did I apply?
+- Which applications are still active?
+- When should I follow up?
+- Which applications reached the interview stage?
+- Which sources produce the most responses?
+- What is my interview conversion rate?
+
+JobTrack is designed to answer these questions from one dashboard.
+
+---
+
+## Core Features
+
+### Authentication & Security
+
+- User registration and login
+- JWT-based authentication
 - BCrypt password hashing
-- Stateless JWT authentication
-- Per-user data isolation
+- Protected REST endpoints
+- User-specific application data
+- Stateless authentication
+- Role-ready security architecture
 
-### Job tracking
-- Company, position, location
-- Remote/hybrid/onsite/flexible
-- Saved/applied/screening/interview/offer/rejected/withdrawn/ghosted
-- Low/medium/high priority
-- Source, URL, salary
-- Recruiter name/email
-- Applied date, deadline, next follow-up
+### Application Management
+
+Create and manage job applications with information such as:
+
+- Company
+- Job title
+- Location
+- Work mode
+- Employment type
+- Application status
+- Priority
+- Salary range
+- Job posting URL
+- Application source
+- Recruiter information
+- Applied date
+- Follow-up date
+- Deadline
 - Notes
-- Create, read, update, delete
-- Search and status filtering
+
+### Application Pipeline
+
+Applications can move through a structured workflow:
+
+```text
+SAVED
+  ↓
+APPLIED
+  ↓
+SCREENING
+  ↓
+INTERVIEW
+  ↓
+OFFER
+```
+
+Applications can also transition to:
+
+```text
+REJECTED
+WITHDRAWN
+GHOSTED
+```
 
 ### Dashboard
+
+The dashboard provides an overview of the job search including:
+
 - Total applications
-- Saved, applied, screening, interview, offers, rejected and active counts
+- Active applications
+- Interviews
+- Offers
+- Rejections
+- Applications by status
+- Recent applications
+- Follow-up opportunities
 
-## Local development — recommended first path
+### Search & Filtering
 
-### Option A: easiest backend path (H2, no database installation)
+Applications can be searched and filtered by:
 
-Prerequisites:
-- JDK 21
+- Company
+- Position
+- Status
+- Priority
+- Work mode
+- Application source
+
+---
+
+# Architecture
+
+JobTrack follows a separated full-stack architecture.
+
+```text
+                    ┌─────────────────────┐
+                    │       Browser       │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │ React + TypeScript  │
+                    │       Frontend      │
+                    └──────────┬──────────┘
+                               │ REST / JSON
+                               ▼
+                    ┌─────────────────────┐
+                    │    Spring Boot      │
+                    │      Backend       │
+                    └──────────┬──────────┘
+                               │
+                 ┌─────────────┴─────────────┐
+                 ▼                           ▼
+        ┌─────────────────┐         ┌─────────────────┐
+        │ Spring Data JPA │         │ Spring Security │
+        └────────┬────────┘         └─────────────────┘
+                 │
+                 ▼
+        ┌─────────────────┐
+        │   PostgreSQL    │
+        └─────────────────┘
+```
+
+The frontend communicates with the backend exclusively through REST APIs. Database access remains inside the backend layer.
+
+---
+
+# Technology Stack
+
+## Backend
+
+- Java 21
+- Spring Boot
+- Spring Web
+- Spring Security
+- JWT
+- Spring Data JPA
+- Hibernate
+- Bean Validation
+- Flyway
+- Maven
+- PostgreSQL
+- H2 for local development/testing
+
+## Frontend
+
+- React
+- TypeScript
+- Vite
+- React Router
+- Modern CSS
+
+## Infrastructure
+
+- Docker
+- Docker Compose
+- PostgreSQL
+- Vercel
+- Render
+
+---
+
+# Project Structure
+
+```text
+JobTrack/
+│
+├── backend/
+│   ├── src/
+│   │   ├── main/
+│   │   │   ├── java/
+│   │   │   └── resources/
+│   │   └── test/
+│   │
+│   ├── pom.xml
+│   └── Dockerfile
+│
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── services/
+│   │   └── ...
+│   │
+│   ├── package.json
+│   └── Dockerfile
+│
+├── docs/
+│
+├── docker-compose.yml
+└── README.md
+```
+
+---
+
+# Running Locally
+
+## Requirements
+
+Install:
+
+- Java 21+
 - Maven 3.9+
-- Node 20+
+- Node.js 20+
+- npm
+- Docker Desktop (optional)
 
-Backend:
+---
+
+## Start the Backend
 
 ```bash
 cd backend
 mvn spring-boot:run
 ```
 
-The backend uses the `local` profile by default and stores H2 data in `backend/data/`.
+The API will be available at:
 
-Frontend in another terminal:
+```text
+http://localhost:8080
+```
+
+Health check:
+
+```text
+http://localhost:8080/actuator/health
+```
+
+---
+
+## Start the Frontend
+
+Open another terminal:
 
 ```bash
 cd frontend
-cp .env.example .env
 npm install
 npm run dev
 ```
 
-Open http://localhost:5173.
+Open:
 
-### Option B: full local PostgreSQL stack
+```text
+http://localhost:5173
+```
 
-Install Docker Desktop, then from the repository root:
+---
+
+# Docker
+
+The project can also be started using Docker Compose:
 
 ```bash
 docker compose up --build
 ```
 
-Open http://localhost:5173.
-
-## API smoke tests
-
-Health:
+To stop the services:
 
 ```bash
-curl http://localhost:8080/actuator/health
+docker compose down
 ```
 
-Register:
+To remove the database volume as well:
 
 ```bash
-curl -X POST http://localhost:8080/api/auth/register -H "Content-Type: application/json" -d '{"name":"Zeeshan","email":"zeeshan@example.com","password":"Password123!"}'
+docker compose down -v
 ```
 
-Login and copy the returned token:
+---
 
-```bash
-curl -X POST http://localhost:8080/api/auth/login -H "Content-Type: application/json" -d '{"email":"zeeshan@example.com","password":"Password123!"}'
+# API
+
+The backend exposes REST endpoints for authentication, applications, and dashboard data.
+
+Example:
+
+```text
+POST   /api/auth/register
+POST   /api/auth/login
+
+GET    /api/applications
+POST   /api/applications
+GET    /api/applications/{id}
+PUT    /api/applications/{id}
+DELETE /api/applications/{id}
+
+GET    /api/dashboard
 ```
 
-Then call dashboard:
+Authentication-protected endpoints require a valid JWT.
 
-```bash
-curl http://localhost:8080/api/jobs/dashboard -H "Authorization: Bearer YOUR_TOKEN"
+---
+
+# Security
+
+Security is treated as a core part of the application rather than an afterthought.
+
+JobTrack implements:
+
+- Password hashing with BCrypt
+- JWT authentication
+- Protected API endpoints
+- User-level data isolation
+- Stateless authentication
+- Validation of incoming requests
+- Database constraints
+- Environment-based configuration
+
+A user can only access applications belonging to that authenticated account.
+
+---
+
+# Development Roadmap
+
+JobTrack is being developed incrementally.
+
+### Phase 1 — Core Platform
+
+- [x] Authentication
+- [x] Application CRUD
+- [x] Status management
+- [x] Dashboard
+- [x] Search
+- [x] Filtering
+- [x] Database persistence
+- [x] Docker support
+
+### Phase 2 — Advanced Tracking
+
+- [ ] Kanban pipeline
+- [ ] Application timeline
+- [ ] Interview management
+- [ ] Follow-up reminders
+- [ ] Activity history
+- [ ] Pagination and advanced sorting
+- [ ] CSV import/export
+
+### Phase 3 — Analytics
+
+- [ ] Application conversion rate
+- [ ] Interview conversion rate
+- [ ] Offer conversion rate
+- [ ] Application-source analytics
+- [ ] Monthly job-search analytics
+
+### Phase 4 — AI Features
+
+- [ ] Job description analysis
+- [ ] Resume-to-job matching
+- [ ] Skill-gap analysis
+- [ ] AI-generated application insights
+- [ ] Job-specific interview preparation
+
+### Phase 5 — Production Deployment
+
+- [ ] Production PostgreSQL
+- [ ] Backend deployment
+- [ ] Frontend deployment
+- [ ] Production CORS configuration
+- [ ] Environment secrets
+- [ ] HTTPS
+- [ ] Production monitoring
+- [ ] CI/CD
+
+---
+
+# Engineering Goals
+
+The goal of JobTrack is not simply to demonstrate CRUD operations.
+
+The project is being developed to demonstrate practical software-engineering concepts including:
+
+- Layered backend architecture
+- REST API design
+- Authentication and authorization
+- Database modelling
+- Transaction management
+- Validation
+- Exception handling
+- Secure configuration
+- Containerization
+- Production deployment
+- Scalable frontend/backend separation
+
+---
+
+# Future Architecture
+
+The long-term architecture is designed to support deployment using a separate frontend and backend:
+
+```text
+                 Vercel
+                   │
+                   │ HTTPS
+                   ▼
+             React Frontend
+                   │
+                   │ REST API
+                   ▼
+              Render
+          Spring Boot Backend
+                   │
+                   ▼
+             PostgreSQL
 ```
 
-## Manual acceptance test
+This keeps the application portable between local development and production environments.
 
-1. Register a new account.
-2. Log in.
-3. Add an application in each important status.
-4. Confirm dashboard counters change.
-5. Search by company/role/location.
-6. Filter by status.
-7. Edit a record and verify the table updates.
-8. Delete a record and verify it disappears.
-9. Log out and confirm the login screen returns.
-10. Create a second account and confirm it cannot see the first account's jobs.
-11. Restart the backend and confirm H2 data persists.
+---
 
-## Deployment strategy
+## Status
 
-Do **not** change the architecture for hosting before the local baseline works.
+**Active development**
 
-Recommended production topology:
-
-- Frontend: Vercel
-- Backend: Render Web Service
-- Database: Render PostgreSQL or another managed PostgreSQL provider
-- Frontend environment: `VITE_API_URL=https://YOUR-BACKEND.onrender.com/api`
-- Backend environment: `SPRING_PROFILES_ACTIVE=postgres`, database credentials/URL, strong `JWT_SECRET`, and `CORS_ALLOWED_ORIGINS=https://YOUR-VERCEL-DOMAIN.vercel.app`
-
-The frontend is deliberately separated from the backend so this transition is configuration-driven rather than a rewrite.
-
-## Important production hardening before launch
-
-- Replace the demo JWT secret.
-- Use a managed PostgreSQL database.
-- Restrict CORS to the exact Vercel domain.
-- Disable H2 console in production.
-- Add HTTPS-only cookie/session strategy if moving away from localStorage JWT.
-- Add rate limiting and login brute-force protection.
-- Add email verification/password reset if public users will use the service.
-- Add structured logging and error tracking.
-- Add automated backend tests and frontend E2E tests before calling the hosted version production-ready.
-
-## Roadmap for the next iteration
-
-1. Local baseline validation.
-2. Add richer dashboard charts and weekly application analytics.
-3. Add interviews/events as a first-class entity.
-4. Add reminders/notifications.
-5. Add resume/version tracking.
-6. Add CSV import/export.
-7. Add application activity timeline.
-8. Add optional AI-assisted job description parsing using Spring AI.
-9. Add production observability and CI/CD.
-10. Deploy Vercel + Render only after all local acceptance tests pass.
+JobTrack is currently being developed as a portfolio-grade full-stack Java application.
